@@ -6,7 +6,6 @@ A lightweight Python library for parsing Meshtastic MQTT messages into JSON form
 
 This library connects to a Meshtastic MQTT broker and decodes various message types into JSON format, making it simple to process Meshtastic mesh network data in your Python applications.
 
-
 ## Features
 
 - Connects to any Meshtastic MQTT broker
@@ -16,16 +15,25 @@ This library connects to a Meshtastic MQTT broker and decodes various message ty
 - Message type filtering support
 - Simple command-line interface
 
-## Installation 
+## Installation
+
+Install from PyPI:
+
 ```bash
-pip install cryptography protobuf meshtastic paho-mqtt
+pip install pip install meshtastic-mqtt
+
 ```
 
 ## usage
 ```bash
-python meshtastic_mqtt.py [options]
+python meshtastic_mqtt [options]
 ```
 
+```python
+from meshtastic_mqtt import MeshtasticMQTT
+client = MeshtasticMQTT()
+client.connect(broker='mqtt.meshtastic.org', port=1883, root='msh/US/2/e/', channel='LongFast', username='meshdev', password='large4cats', key='AQ==')
+```
 
 ### Command Line Options
 | Option       | Description                   | Default               |

@@ -26,6 +26,7 @@ try:
 except ImportError:
 	raise ImportError('missing the paho-mqtt module (pip install paho-mqtt)')
 
+
 class MeshtasticMQTT(object):
 	def __init__(self):
 		'''Initialize the Meshtastic MQTT client'''
@@ -301,21 +302,26 @@ class MeshtasticMQTT(object):
 			print(mp)
 
 
-if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Meshtastic MQTT Interface')
-	parser.add_argument('--broker', default='mqtt.meshtastic.org', help='MQTT broker address')
-	parser.add_argument('--port', default=1883, type=int, help='MQTT broker port')
-	parser.add_argument('--root', default='msh/US/2/e/', help='Root topic')
-	parser.add_argument('--channel', default='LongFast', help='Channel name')
-	parser.add_argument('--username', default='meshdev', help='MQTT username')
-	parser.add_argument('--password', default='large4cats', help='MQTT password')
-	parser.add_argument('--key', default='AQ==', help='Encryption key')
-	parser.add_argument('--filter', help='Filter message types (comma-separated). Example: NODEINFO,POSITION,TEXT_MESSAGE')
-	args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser(description='Meshtastic MQTT Interface')
+    parser.add_argument('--broker', default='mqtt.meshtastic.org', help='MQTT broker address')
+    parser.add_argument('--port', default=1883, type=int, help='MQTT broker port')
+    parser.add_argument('--root', default='msh/US/2/e/', help='Root topic')
+    parser.add_argument('--channel', default='LongFast', help='Channel name')
+    parser.add_argument('--username', default='meshdev', help='MQTT username')
+    parser.add_argument('--password', default='large4cats', help='MQTT password')
+    parser.add_argument('--key', default='AQ==', help='Encryption key')
+    parser.add_argument('--filter', help='Filter message types (comma-separated). Example: NODEINFO,POSITION,TEXT_MESSAGE')
+    args = parser.parse_args()
 
-	client = MeshtasticMQTT()
-	if args.filter:
-		client.filters = [f'{f.strip()}_APP' for f in args.filter.upper().split(',')]
-	else:
-		client.filters = None
-	client.connect(args.broker, args.port, args.root, args.channel, args.username, args.password, args.key)
+    client = MeshtasticMQTT()
+    if args.filter:
+        client.filters = [f'{f.strip()}_APP' for f in args.filter.upper().split(',')]
+    else:
+        client.filters = None
+    client.connect(args.broker, args.port, args.root, args.channel, args.username, args.password, args.key)
+
+
+
+if __name__ == '__main__':
+    main() 
