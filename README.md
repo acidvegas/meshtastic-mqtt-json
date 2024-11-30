@@ -27,16 +27,16 @@ python meshtastic_mqtt.py [options]
 
 
 ### Command Line Options
-| Option       | Description                                          |
-| ------------ | ---------------------------------------------------- |
-| `--broker`   | MQTT broker address *(default: mqtt.meshtastic.org)* |
-| `--port`     | MQTT broker port *(default: 1883)*                   |
-| `--root`     | Root topic *(default: msh/US/2/e/)*                  |
-| `--channel`  | Channel name *(default: LongFast)*                   |
-| `--username` | MQTT username *(default: meshdev)*                   |
-| `--password` | MQTT password *(default: large4cats)*                |
-| `--key`      | Encryption key *(default: AQ==)*                     |
-| `--filter`   | Filter specific message types *(comma-separated)*    |
+| Option       | Description                   | Default               |
+| ------------ | ------------------------------|---------------------- |
+| `--broker`   | MQTT broker address           | `mqtt.meshtastic.org` |
+| `--port`     | MQTT broker port              | `1883`                |   
+| `--root`     | Root topic                    | `msh/US/2/e/`         |
+| `--channel`  | Channel name                  | `LongFast`            |
+| `--username` | MQTT username                 | `meshdev`             |
+| `--password` | MQTT password                 | `large4cats`          |
+| `--key`      | Encryption key                | `AQ==`                |
+| `--filter`   | Filter specific message types |                       |
 
 ### Filter Example
 ```bash
