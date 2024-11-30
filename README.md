@@ -20,8 +20,7 @@ This library connects to a Meshtastic MQTT broker and decodes various message ty
 Install from PyPI:
 
 ```bash
-pip install pip install meshtastic-mqtt
-
+pip install meshtastic-mqtt
 ```
 
 ## usage
