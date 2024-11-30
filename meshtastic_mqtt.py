@@ -315,7 +315,7 @@ if __name__ == '__main__':
 
 	client = MeshtasticMQTT()
 	if args.filter:
-		client.filters = [f"{f.strip()}_APP" for f in args.filter.upper().split(',')]
+		client.filters = [f'{f.strip()}_APP' for f in args.filter.upper().split(',')]
 	else:
 		client.filters = None
 	client.connect(args.broker, args.port, args.root, args.channel, args.username, args.password, args.key)

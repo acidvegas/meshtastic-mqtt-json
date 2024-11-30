@@ -6,6 +6,7 @@ A lightweight Python library for parsing Meshtastic MQTT messages into JSON form
 
 This library connects to a Meshtastic MQTT broker and decodes various message types into JSON format, making it simple to process Meshtastic mesh network data in your Python applications.
 
+
 ## Features
 
 - Connects to any Meshtastic MQTT broker
@@ -75,16 +76,11 @@ The library supports parsing of the following Meshtastic message types:
 | **ZPS_APP**                     | Zone/Position System messages |
 
 
-## Building Applications
-
-This library serves as a foundation for building more complex Meshtastic applications. Some possible uses:
-
-- Message logging systems
-- Position tracking applications
-- Network monitoring tools
-- Chat applications
-- Telemetry data collection
-- Mesh network analysis tools
+## Roadmap
+- [ ] Add support for custom node ID & names for the client
+- [ ] Add support for custom MQTT servers besides the official Meshtastic server
+- [ ] Create a PyPi package for easy import into other projects
+- [ ] Create an examples folder with use cases for the library, such as an IRC relay, cli chat, logging, etc.
 
 ___
 
