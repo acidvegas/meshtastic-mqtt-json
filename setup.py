@@ -1,18 +1,18 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="meshtastic_mqtt",
+    name="meshtastic-mqtt-json",
     version='0.1.0',
     author='acidvegas',
     author_email='acid.vegas@acid.vegas',
     description='A lightweight Python library for parsing Meshtastic MQTT messages',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/acidvegas/meshtastic_mqtt',
+    url='https://github.com/acidvegas/meshtastic_mqtt_json',
     project_urls={
-        'Bug Tracker'   : 'https://github.com/acidvegas/meshtastic_mqtt/issues',
-        'Documentation' : 'https://github.com/acidvegas/meshtastic_mqtt#readme',
-        'Source Code'   : 'https://github.com/acidvegas/meshtastic_mqtt',
+        'Bug Tracker'   : 'https://github.com/acidvegas/meshtastic_mqtt_json/issues',
+        'Documentation' : 'https://github.com/acidvegas/meshtastic_mqtt_json#readme',
+        'Source Code'   : 'https://github.com/acidvegas/meshtastic_mqtt_json',
     },
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
@@ -37,7 +37,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'meshtastic-mqtt=meshtastic_mqtt.client:main',
+            'meshtastic-mqtt-json=meshtastic_mqtt_json.client:main',
         ],
     },
 ) 

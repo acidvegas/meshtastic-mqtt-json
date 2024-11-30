@@ -20,16 +20,16 @@ This library connects to a Meshtastic MQTT broker and decodes various message ty
 Install from PyPI:
 
 ```bash
-pip install meshtastic-mqtt
+pip install meshtastic-mqtt-json
 ```
 
 ## usage
 ```bash
-python meshtastic_mqtt [options]
+python meshtastic_mqtt_json [options]
 ```
 
 ```python
-from meshtastic_mqtt import MeshtasticMQTT
+from meshtastic_mqtt_json import MeshtasticMQTT
 client = MeshtasticMQTT()
 client.connect(broker='mqtt.meshtastic.org', port=1883, root='msh/US/2/e/', channel='LongFast', username='meshdev', password='large4cats', key='AQ==')
 ```
@@ -48,7 +48,7 @@ client.connect(broker='mqtt.meshtastic.org', port=1883, root='msh/US/2/e/', chan
 
 ### Filter Example
 ```bash
-python meshtastic_mqtt.py --filter "NODEINFO,POSITION,TEXT_MESSAGE"
+python meshtastic_mqtt_json.py --filter "NODEINFO,POSITION,TEXT_MESSAGE"
 ```
 
 
@@ -91,4 +91,4 @@ The library supports parsing of the following Meshtastic message types:
 
 ___
 
-###### Mirrors for this repository: [acid.vegas](https://git.acid.vegas/meshtastic_mqtt) • [SuperNETs](https://git.supernets.org/acidvegas/meshtastic_mqtt) • [GitHub](https://github.com/acidvegas/meshtastic_mqtt) • [GitLab](https://gitlab.com/acidvegas/meshtastic_mqtt) • [Codeberg](https://codeberg.org/acidvegas/meshtastic_mqtt)
+###### Mirrors for this repository: [acid.vegas](https://git.acid.vegas/meshtastic_mqtt_json) • [SuperNETs](https://git.supernets.org/acidvegas/meshtastic_mqtt_json) • [GitHub](https://github.com/acidvegas/meshtastic_mqtt_json) • [GitLab](https://gitlab.com/acidvegas/meshtastic_mqtt_json) • [Codeberg](https://codeberg.org/acidvegas/meshtastic_mqtt_json)

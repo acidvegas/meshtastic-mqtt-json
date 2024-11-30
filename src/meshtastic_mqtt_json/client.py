@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Meshtastic MQTT Interface - Developed by acidvegas in Python (https://acid.vegas/meshtastic)
+# Meshtastic MQTT Interface - Developed by acidvegas in Python (https://acid.vegas/meshtastic_mqtt_json)
 
 import argparse
 import base64
