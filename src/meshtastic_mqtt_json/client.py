@@ -167,7 +167,22 @@ class MeshtasticMQTT(object):
 			if self.filters and portnum_name not in self.filters:
 				return
 
-			json_packet = json.loads(MessageToJson(mp))
+			# Convert to JSON with parsing options to handle NaN
+			json_packet = json.loads(MessageToJson(mp, including_default_value_fields=True, 
+												 preserving_proto_field_name=True,
+												 float_precision=10))
+
+			# Replace NaN values with null in the JSON structure
+			def replace_nan(obj):
+				if isinstance(obj, dict):
+					return {k: replace_nan(v) for k, v in obj.items()}
+				elif isinstance(obj, list):
+					return [replace_nan(x) for x in obj]
+				elif isinstance(obj, str) and obj == 'NaN':
+					return None
+				return obj
+
+			json_packet = replace_nan(json_packet)
 
 			# Process the message based on its type
 			if mp.decoded.portnum == portnums_pb2.ADMIN_APP:
