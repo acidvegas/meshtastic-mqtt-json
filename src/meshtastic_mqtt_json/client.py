@@ -135,15 +135,20 @@ class MeshtasticMQTT(object):
 
 		:param client:   The client instance for this callback
 		:param userdata: The private user data as set in Client() or user_data_set()
-		:param msg:      An instance of MQTTMessage. This is a
+		:param msg:      An instance of MQTTMessage
 		'''
-
+		
 		try:
 			# Define the service envelope
 			service_envelope = mqtt_pb2.ServiceEnvelope()
 
-			# Parse the message payload
-			service_envelope.ParseFromString(msg.payload)
+			try:
+				# Parse the message payload
+				service_envelope.ParseFromString(msg.payload)
+			except Exception as e:
+				print(f'Error parsing service envelope: {e}')
+				print(f'Raw payload: {msg.payload}')
+				return
 
 			# Extract the message packet from the service envelope
 			mp = service_envelope.packet
@@ -299,7 +304,8 @@ class MeshtasticMQTT(object):
 
 		except Exception as e:
 			print(f'Error processing message: {e}')
-			print(mp)
+			print(f'Topic: {msg.topic}')
+			print(f'Payload: {msg.payload}')
 
 
 def main():
