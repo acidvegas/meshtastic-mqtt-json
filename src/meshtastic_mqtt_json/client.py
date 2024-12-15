@@ -167,19 +167,27 @@ class MeshtasticMQTT(object):
 			if self.filters and portnum_name not in self.filters:
 				return
 
-			# Convert to JSON with parsing options to handle NaN
+			# Convert to JSON and handle NaN values in one shot
 			json_packet = json.loads(MessageToJson(mp, including_default_value_fields=True, 
 												 preserving_proto_field_name=True,
 												 float_precision=10))
 
-			# Replace NaN values with null in the JSON structure
+			# Replace all NaN values with null before any further processing
 			def replace_nan(obj):
+				'''
+				Replace all NaN values with null before any further processing
+
+				:param obj: The object to replace NaN values in
+				'''
 				if isinstance(obj, dict):
 					return {k: replace_nan(v) for k, v in obj.items()}
 				elif isinstance(obj, list):
 					return [replace_nan(x) for x in obj]
-				elif isinstance(obj, str) and obj == 'NaN':
+				elif isinstance(obj, float) and str(obj).lower() == 'nan':
 					return None
+				elif isinstance(obj, str) and obj.lower() == 'nan':
+					return None
+				
 				return obj
 
 			json_packet = replace_nan(json_packet)
