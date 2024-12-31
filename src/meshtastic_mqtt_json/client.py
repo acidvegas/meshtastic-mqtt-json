@@ -292,7 +292,8 @@ class MeshtasticMQTT(object):
 			elif mp.decoded.portnum == portnums_pb2.TELEMETRY_APP:
 				telemetry = telemetry_pb2.Telemetry()
 				telemetry.ParseFromString(mp.decoded.payload)
-				json_packet['decoded']['payload'] = json.loads(MessageToJson(telemetry))
+				telemetry_json = json.loads(MessageToJson(telemetry))
+				json_packet['decoded']['payload'] = replace_nan(telemetry_json)
 				print(json.dumps(json_packet))
 
 			elif mp.decoded.portnum == portnums_pb2.TEXT_MESSAGE_APP:
