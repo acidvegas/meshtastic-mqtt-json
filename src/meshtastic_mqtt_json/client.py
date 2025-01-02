@@ -168,9 +168,7 @@ class MeshtasticMQTT(object):
 				return
 
 			# Convert to JSON and handle NaN values in one shot
-			json_packet = json.loads(MessageToJson(mp, including_default_value_fields=True, 
-												 preserving_proto_field_name=True,
-												 float_precision=10))
+			json_packet = json.loads(MessageToJson(mp))
 
 			# Replace all NaN values with null before any further processing
 			def replace_nan(obj):
@@ -292,8 +290,7 @@ class MeshtasticMQTT(object):
 			elif mp.decoded.portnum == portnums_pb2.TELEMETRY_APP:
 				telemetry = telemetry_pb2.Telemetry()
 				telemetry.ParseFromString(mp.decoded.payload)
-				telemetry_json = json.loads(MessageToJson(telemetry))
-				json_packet['decoded']['payload'] = replace_nan(telemetry_json)
+				json_packet['decoded']['payload'] = json.loads(MessageToJson(telemetry))
 				print(json.dumps(json_packet))
 
 			elif mp.decoded.portnum == portnums_pb2.TEXT_MESSAGE_APP:
