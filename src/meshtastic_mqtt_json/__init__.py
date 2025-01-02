@@ -4,6 +4,6 @@ Meshtastic MQTT Interface - A lightweight Python library for parsing Meshtastic 
 
 from .client import MeshtasticMQTT
 
-__version__ = "1.0.5"
+__version__ = "1.0.7"
 __author__  = "acidvegas"
 __license__ = "ISC" 
