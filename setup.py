@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="meshtastic-mqtt-json",
-    version='1.0.5',
+    version='1.0.8',
     author='acidvegas',
     author_email='acid.vegas@acid.vegas',
     description='A lightweight Python library for parsing Meshtastic MQTT messages',
