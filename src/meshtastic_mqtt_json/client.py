@@ -212,32 +212,38 @@ class MeshtasticMQTT(object):
 			if mp.decoded.portnum == portnums_pb2.ADMIN_APP:
 				data = mesh_pb2.Admin()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.ATAK_FORWARDER:
 				data = mesh_pb2.AtakForwarder()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.ATAK_PLUGIN:
 				data = mesh_pb2.AtakPlugin()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.AUDIO_APP:
 				data = mesh_pb2.Audio()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.DETECTION_SENSOR_APP:
 				data = mesh_pb2.DetectionSensor()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.IP_TUNNEL_APP:
 				data = mesh_pb2.IPTunnel()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.MAP_REPORT_APP:
 				map_report = mesh_pb2.MapReport()
@@ -262,7 +268,8 @@ class MeshtasticMQTT(object):
 			elif mp.decoded.portnum == portnums_pb2.PAXCOUNTER_APP:
 				data = mesh_pb2.Paxcounter()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.POSITION_APP:
 				position = mesh_pb2.Position()
@@ -273,7 +280,8 @@ class MeshtasticMQTT(object):
 			elif mp.decoded.portnum == portnums_pb2.PRIVATE_APP:
 				data = mesh_pb2.Private()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.RANGE_TEST_APP:
 				data = mesh_pb2.RangeTest()
@@ -284,12 +292,14 @@ class MeshtasticMQTT(object):
 			elif mp.decoded.portnum == portnums_pb2.REMOTE_HARDWARE_APP:
 				data = mesh_pb2.RemoteHardware()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.REPLY_APP:
 				data = mesh_pb2.Reply()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.ROUTING_APP:
 				routing = mesh_pb2.Routing()
@@ -300,12 +310,14 @@ class MeshtasticMQTT(object):
 			elif mp.decoded.portnum == portnums_pb2.SERIAL_APP:
 				data = mesh_pb2.Serial()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.SIMULATOR_APP:
 				data = mesh_pb2.Simulator()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.STORE_FORWARD_APP:
 				print(f'{clean_json(mp)}')
@@ -325,13 +337,14 @@ class MeshtasticMQTT(object):
 			elif mp.decoded.portnum == portnums_pb2.TEXT_MESSAGE_COMPRESSED_APP:
 				data = mesh_pb2.TextMessageCompressed()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.TRACEROUTE_APP:
-					routeDiscovery = mesh_pb2.RouteDiscovery()
-					routeDiscovery.ParseFromString(mp.decoded.payload)
-					json_packet['decoded']['payload'] = clean_json(routeDiscovery)
-					print(f'{json.dumps(json_packet)}')
+				routeDiscovery = mesh_pb2.RouteDiscovery()
+				routeDiscovery.ParseFromString(mp.decoded.payload)
+				json_packet['decoded']['payload'] = clean_json(routeDiscovery)
+				print(f'{json.dumps(json_packet)}')
 
 			elif mp.decoded.portnum == portnums_pb2.UNKNOWN_APP:
 				print(f'{clean_json(mp)}')
@@ -339,16 +352,19 @@ class MeshtasticMQTT(object):
 			elif mp.decoded.portnum == portnums_pb2.WAYPOINT_APP:
 				data = mesh_pb2.Waypoint()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			elif mp.decoded.portnum == portnums_pb2.ZPS_APP:
 				data = mesh_pb2.Zps()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{clean_json(data)}')
+				msg = json.dumps(clean_json(data))
+				print(f'{msg}')
 
 			else:
 				print(f'UNKNOWN: Received Portnum name: {portnum_name}')
-				print(f'UNKNOWN: {clean_json(mp)}')
+				msg = json.dumps(clean_json(mp))
+				print(f'UNKNOWN: {msg}')
 
 		except Exception as e:
 			print(f'Error processing message: {e}')
@@ -359,10 +375,16 @@ class MeshtasticMQTT(object):
 	def event_mqtt_disconnect(self, client, userdata, rc, packet_from_broker=None, properties=None, reason_code=None):
 		'''Callback for when the client disconnects from the server.'''
 		print(f'Disconnected with result code: {rc}')
-		
-		time.sleep(5)
-		print('Attempting to reconnect...')
-		client.reconnect()
+		while True:
+			print('Attempting to reconnect...')
+			try:
+				client.reconnect()
+			except Exception as e:
+				print(f'Error reconnecting to MQTT broker: {e}')
+				time.sleep(5)
+			else:
+				print('Reconnected to MQTT broker')
+				break
 
 
 def main():
