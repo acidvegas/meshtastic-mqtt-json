@@ -4,6 +4,7 @@
 import argparse
 import base64
 import json
+import time
 
 try:
 	from cryptography.hazmat.backends           import default_backend
@@ -25,6 +26,26 @@ try:
 	import paho.mqtt.client as mqtt
 except ImportError:
 	raise ImportError('missing the paho-mqtt module (pip install paho-mqtt)')
+
+
+def clean_json(data) -> dict:
+	'''
+	Clean the JSON data by replacing NaN values with null
+
+	:param data: The JSON data to clean
+	'''
+	# Handle protobuf messages
+	if hasattr(data, 'DESCRIPTOR'):
+		data = json.loads(MessageToJson(data))
+
+	# Remove empty and NaN values from the JSON data
+	if isinstance(data, dict):
+		return {k: v for k, v in ((k, clean_json(v)) for k, v in data.items()) if str(v) not in ('None', 'nan', '')}
+	elif isinstance(data, list):
+		return [v for v in (clean_json(v) for v in data) if str(v) not in ('None', 'nan', '')]
+
+	# Return primitive types as-is
+	return data
 
 
 class MeshtasticMQTT(object):
@@ -52,6 +73,7 @@ class MeshtasticMQTT(object):
 
 		# Initialize the MQTT client
 		client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id='', clean_session=True, userdata=None)
+		client.connect_timeout = 10
 
 		# Set the username and password for the MQTT broker
 		client.username_pw_set(username=username, password=password)
@@ -69,11 +91,16 @@ class MeshtasticMQTT(object):
 			raise
 
 		# Set the MQTT callbacks
-		client.on_connect = self.event_mqtt_connect
-		client.on_message = self.event_mqtt_recv
+		client.on_connect    = self.event_mqtt_connect
+		client.on_message    = self.event_mqtt_recv
+		client.on_disconnect = self.event_mqtt_disconnect
 
 		# Connect to the MQTT broker
-		client.connect(broker, port, 60)
+		try:
+			client.connect(broker, port, 60)
+		except Exception as e:
+			print(f'Error connecting to MQTT broker: {e}')
+			self.event_mqtt_disconnect(client, '', 1, None)
 
 		# Set the subscribe topic
 		self.subscribe_topic = f'{root}{channel}/#'
@@ -88,7 +115,6 @@ class MeshtasticMQTT(object):
 
 		:param mp: The message packet to decrypt
 		'''
-
 		try:
 			# Extract the nonce from the packet
 			nonce_packet_id = getattr(mp, 'id').to_bytes(8, 'little')
@@ -96,20 +122,30 @@ class MeshtasticMQTT(object):
 			nonce = nonce_packet_id + nonce_from_node
 
 			# Decrypt the message
-			cipher          = Cipher(algorithms.AES(self.key_bytes), modes.CTR(nonce), backend=default_backend())
-			decryptor       = cipher.decryptor()
+			cipher = Cipher(algorithms.AES(self.key_bytes), modes.CTR(nonce), backend=default_backend())
+			decryptor = cipher.decryptor()
 			decrypted_bytes = decryptor.update(getattr(mp, 'encrypted')) + decryptor.finalize()
 
 			# Parse the decrypted message
 			data = mesh_pb2.Data()
-			data.ParseFromString(decrypted_bytes)
+			try:
+				data.ParseFromString(decrypted_bytes)
+			except:
+				# Ignore this as the message does not need to be decrypted
+				return None
+
 			mp.decoded.CopyFrom(data)
+
 			return mp
+
 		except Exception as e:
 			print(f'Error decrypting message: {e}')
-			print(mp)
+			print(f'Message packet details:')
+			print(f'- From: {getattr(mp, "from", "unknown")}')
+			print(f'- To: {getattr(mp, "to", "unknown")}')
+			print(f'- Channel: {getattr(mp, "channel", "unknown")}')
+			print(f'- ID: {getattr(mp, "id", "unknown")}')
 			return None
-
 
 
 	def event_mqtt_connect(self, client, userdata, flags, rc, properties):
@@ -137,7 +173,7 @@ class MeshtasticMQTT(object):
 		:param userdata: The private user data as set in Client() or user_data_set()
 		:param msg:      An instance of MQTTMessage
 		'''
-		
+
 		try:
 			# Define the service envelope
 			service_envelope = mqtt_pb2.ServiceEnvelope()
@@ -168,165 +204,165 @@ class MeshtasticMQTT(object):
 				return
 
 			# Convert to JSON and handle NaN values in one shot
-			json_packet = json.loads(MessageToJson(mp))
-
-			# Replace all NaN values with null before any further processing
-			def replace_nan(obj):
-				'''
-				Replace all NaN values with null before any further processing
-
-				:param obj: The object to replace NaN values in
-				'''
-				if isinstance(obj, dict):
-					return {k: replace_nan(v) for k, v in obj.items()}
-				elif isinstance(obj, list):
-					return [replace_nan(x) for x in obj]
-				elif isinstance(obj, float) and str(obj).lower() == 'nan':
-					return None
-				elif isinstance(obj, str) and obj.lower() == 'nan':
-					return None
-				
-				return obj
-
-			json_packet = replace_nan(json_packet)
+			json_packet = clean_json(mp)
+			
+			#print(f'Raw packet: {json_packet}')  # Debug print
 
 			# Process the message based on its type
 			if mp.decoded.portnum == portnums_pb2.ADMIN_APP:
 				data = mesh_pb2.Admin()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.ATAK_FORWARDER:
 				data = mesh_pb2.AtakForwarder()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.ATAK_PLUGIN:
 				data = mesh_pb2.AtakPlugin()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.AUDIO_APP:
 				data = mesh_pb2.Audio()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.DETECTION_SENSOR_APP:
 				data = mesh_pb2.DetectionSensor()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.IP_TUNNEL_APP:
 				data = mesh_pb2.IPTunnel()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
+
+			elif mp.decoded.portnum == portnums_pb2.MAP_REPORT_APP:
+				map_report = mesh_pb2.MapReport()
+				map_report.ParseFromString(mp.decoded.payload)
+				json_packet['decoded']['payload'] = clean_json(map_report)
+				print(f'{json.dumps(json_packet)}')
 
 			elif mp.decoded.portnum == portnums_pb2.NEIGHBORINFO_APP:
 				neighborInfo = mesh_pb2.NeighborInfo()
 				neighborInfo.ParseFromString(mp.decoded.payload)
-				json_packet['decoded']['payload'] = json.loads(MessageToJson(neighborInfo))
-				print(json.dumps(json_packet))
+				json_packet['decoded']['payload'] = clean_json(neighborInfo)
+				print(f'{json.dumps(json_packet)}')
 
 			elif mp.decoded.portnum == portnums_pb2.NODEINFO_APP:
 				from_id = getattr(mp, 'from')
 				node_info = mesh_pb2.User()
 				node_info.ParseFromString(mp.decoded.payload)
-				json_packet['decoded']['payload'] = json.loads(MessageToJson(node_info))
-				print(json.dumps(json_packet))
+				json_packet['decoded']['payload'] = clean_json(node_info)
+				print(f'{json.dumps(json_packet)}')
 				self.names[from_id] = node_info.long_name
 
 			elif mp.decoded.portnum == portnums_pb2.PAXCOUNTER_APP:
 				data = mesh_pb2.Paxcounter()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.POSITION_APP:
 				position = mesh_pb2.Position()
 				position.ParseFromString(mp.decoded.payload)
-				json_packet['decoded']['payload'] = json.loads(MessageToJson(position))
-				print(json.dumps(json_packet))
+				json_packet['decoded']['payload'] = clean_json(position)
+				print(f'{json.dumps(json_packet)}')
 
 			elif mp.decoded.portnum == portnums_pb2.PRIVATE_APP:
 				data = mesh_pb2.Private()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.RANGE_TEST_APP:
 				data = mesh_pb2.RangeTest()
 				data.ParseFromString(mp.decoded.payload)
-				json_packet['decoded']['payload'] = json.loads(MessageToJson(data))
-				print(json.dumps(json_packet))
+				json_packet['decoded']['payload'] = clean_json(data)
+				print(f'{json.dumps(json_packet)}')
 
 			elif mp.decoded.portnum == portnums_pb2.REMOTE_HARDWARE_APP:
 				data = mesh_pb2.RemoteHardware()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.REPLY_APP:
 				data = mesh_pb2.Reply()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.ROUTING_APP:
 				routing = mesh_pb2.Routing()
 				routing.ParseFromString(mp.decoded.payload)
-				json_packet['decoded']['payload'] = json.loads(MessageToJson(routing))
-				print(json.dumps(json_packet))
+				json_packet['decoded']['payload'] = clean_json(routing)
+				print(f'{json.dumps(json_packet)}')
 
 			elif mp.decoded.portnum == portnums_pb2.SERIAL_APP:
 				data = mesh_pb2.Serial()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.SIMULATOR_APP:
 				data = mesh_pb2.Simulator()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.STORE_FORWARD_APP:
-				print(f'{MessageToJson(mp)}')
+				print(f'{clean_json(mp)}')
 				print(f'{mp.decoded.payload}')
 
 			elif mp.decoded.portnum == portnums_pb2.TELEMETRY_APP:
 				telemetry = telemetry_pb2.Telemetry()
 				telemetry.ParseFromString(mp.decoded.payload)
-				json_packet['decoded']['payload'] = json.loads(MessageToJson(telemetry))
-				print(json.dumps(json_packet))
+				json_packet['decoded']['payload'] = clean_json(telemetry)
+				print(f'{json.dumps(json_packet)}')
 
 			elif mp.decoded.portnum == portnums_pb2.TEXT_MESSAGE_APP:
 				text_payload = mp.decoded.payload.decode('utf-8')
 				json_packet['decoded']['payload'] = text_payload
-				print(json.dumps(json_packet))
+				print(f'{json.dumps(json_packet)}')
 
 			elif mp.decoded.portnum == portnums_pb2.TEXT_MESSAGE_COMPRESSED_APP:
 				data = mesh_pb2.TextMessageCompressed()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.TRACEROUTE_APP:
 					routeDiscovery = mesh_pb2.RouteDiscovery()
 					routeDiscovery.ParseFromString(mp.decoded.payload)
-					json_packet['decoded']['payload'] = json.loads(MessageToJson(routeDiscovery))
-					print(json.dumps(json_packet))
+					json_packet['decoded']['payload'] = clean_json(routeDiscovery)
+					print(f'{json.dumps(json_packet)}')
+
+			elif mp.decoded.portnum == portnums_pb2.UNKNOWN_APP:
+				print(f'{clean_json(mp)}')
 
 			elif mp.decoded.portnum == portnums_pb2.WAYPOINT_APP:
 				data = mesh_pb2.Waypoint()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			elif mp.decoded.portnum == portnums_pb2.ZPS_APP:
 				data = mesh_pb2.Zps()
 				data.ParseFromString(mp.decoded.payload)
-				print(f'{MessageToJson(data)}')
+				print(f'{clean_json(data)}')
 
 			else:
 				print(f'UNKNOWN: Received Portnum name: {portnum_name}')
-				print(f'UNKNOWN: {MessageToJson(mp)}')
+				print(f'UNKNOWN: {clean_json(mp)}')
 
 		except Exception as e:
 			print(f'Error processing message: {e}')
 			print(f'Topic: {msg.topic}')
 			print(f'Payload: {msg.payload}')
+
+
+	def event_mqtt_disconnect(self, client, userdata, rc, packet_from_broker=None, properties=None, reason_code=None):
+		'''Callback for when the client disconnects from the server.'''
+		print(f'Disconnected with result code: {rc}')
+		
+		time.sleep(5)
+		print('Attempting to reconnect...')
+		client.reconnect()
 
 
 def main():
