@@ -25,14 +25,56 @@ pip install meshtastic-mqtt-json
 
 ## usage
 ```bash
-python meshtastic_mqtt_json [options]
+meshtastic_mqtt_json [options]
 ```
 
 ```python
 from meshtastic_mqtt_json import MeshtasticMQTT
+
+# Create client instance
 client = MeshtasticMQTT()
-client.connect(broker='mqtt.meshtastic.org', port=1883, root='msh/US/2/e/', channel='LongFast', username='meshdev', password='large4cats', key='AQ==')
+
+# Register callbacks for specific message types
+def on_text_message(json_data):
+    print(f'Received text message: {json_data["decoded"]["payload"]}')
+
+def on_position(json_data):
+    print(f'Received position update: {json_data["decoded"]["payload"]}')
+
+client.register_callback('TEXT_MESSAGE_APP', on_text_message)
+client.register_callback('POSITION_APP', on_position)
+
+# Connect to MQTT broker
+client.connect(
+    broker='mqtt.meshtastic.org',
+    port=1883,
+    root='msh/US/2/e/',
+    channel='LongFast',
+    username='meshdev',
+    password='large4cats',
+    key='AQ=='
+)
 ```
+
+### Callback System
+The library provides a callback system that allows you to register handlers for specific message types. Each callback function receives a JSON object containing the parsed message data.
+
+```python
+# Register a callback
+client.register_callback('MESSAGE_TYPE', callback_function)
+
+# Unregister a callback
+client.unregister_callback('MESSAGE_TYPE')
+```
+
+The callback function should accept a single parameter that will receive the JSON data:
+```python
+def my_callback(json_data):
+    # json_data contains the parsed message
+    print(json_data)
+```
+
+If no callback is registered for a message type, the message will be printed to the console by default.
 
 ### Command Line Options
 | Option       | Description                   | Default               |
