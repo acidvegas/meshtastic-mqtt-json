@@ -52,12 +52,13 @@ class MeshtasticMQTT(object):
 	def __init__(self):
 		'''Initialize the Meshtastic MQTT client'''
 
-		self.client		  = None
-		self.broadcast_id = 4294967295 # Our channel ID
-		self.key          = None
-		self.names        = {}
-		self.filters      = None
-		self.callbacks    = {}  # Dictionary to store message type callbacks
+		self.client		   = None
+		self.broadcast_id  = 4294967295 # Our channel ID
+		self.key           = None
+		self.names         = {}
+		self.filters       = None
+		self.callbacks     = {}  # Dictionary to store message type callbacks
+		self.shutting_down = False
 
 
 	def register_callback(self, message_type: str, callback: callable):
@@ -146,6 +147,10 @@ class MeshtasticMQTT(object):
 
 		# Set the subscribe topic
 		self.subscribe_topic = f'{root}{channel}/#'
+
+	def disconnect(self):
+		self.shutting_down = True
+		self.client.disconnect()
 
 	def loop_forever(self):
 		self.client.loop_forever()
@@ -419,6 +424,8 @@ class MeshtasticMQTT(object):
 	def event_mqtt_disconnect(self, client, userdata, rc, packet_from_broker=None, properties=None, reason_code=None):
 		'''Callback for when the client disconnects from the server.'''
 		print(f'Disconnected with result code: {rc}')
+		if self.shutting_down:
+			return
 		while True:
 			print('Attempting to reconnect...')
 			try:
