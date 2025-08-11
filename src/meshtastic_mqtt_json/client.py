@@ -52,6 +52,7 @@ class MeshtasticMQTT(object):
 	def __init__(self):
 		'''Initialize the Meshtastic MQTT client'''
 
+		self.client		  = None
 		self.broadcast_id = 4294967295 # Our channel ID
 		self.key          = None
 		self.names        = {}
@@ -113,11 +114,11 @@ class MeshtasticMQTT(object):
 		'''
 
 		# Initialize the MQTT client
-		client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id='', clean_session=True, userdata=None)
-		client.connect_timeout = 10
+		self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id='', clean_session=True, userdata=None)
+		self.client.connect_timeout = 10
 
 		# Set the username and password for the MQTT broker
-		client.username_pw_set(username=username, password=password)
+		self.client.username_pw_set(username=username, password=password)
 
 		# Set the encryption key
 		self.key = '1PG7OiApB1nwvP+rz05pAQ==' if key == 'AQ==' else key
@@ -132,23 +133,28 @@ class MeshtasticMQTT(object):
 			raise
 
 		# Set the MQTT callbacks
-		client.on_connect    = self.event_mqtt_connect
-		client.on_message    = self.event_mqtt_recv
-		client.on_disconnect = self.event_mqtt_disconnect
+		self.client.on_connect    = self.event_mqtt_connect
+		self.client.on_message    = self.event_mqtt_recv
+		self.client.on_disconnect = self.event_mqtt_disconnect
 
 		# Connect to the MQTT broker
 		try:
-			client.connect(broker, port, 60)
+			self.client.connect(broker, port, 60)
 		except Exception as e:
 			print(f'Error connecting to MQTT broker: {e}')
-			self.event_mqtt_disconnect(client, '', 1, None)
+			self.event_mqtt_disconnect(self.client, '', 1, None)
 
 		# Set the subscribe topic
 		self.subscribe_topic = f'{root}{channel}/#'
 
-		# Keep-alive loop
-		client.loop_forever()
+	def loop_forever(self):
+		self.client.loop_forever()
 
+	def loop_start(self):
+		self.client.loop_start()
+
+	def loop_stop(self):
+		self.client.loop_stop()
 
 	def decrypt_message_packet(self, mp):
 		'''
