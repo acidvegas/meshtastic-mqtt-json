@@ -22,3 +22,5 @@ coverage.xml
 # OS
 .DS_Store
 Thumbs.db 
+
+test.py

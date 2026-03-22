@@ -94,8 +94,7 @@ class MeshtasticMQTT(object):
 		# Call registered callback if one exists
 		if portnum_name in self.callbacks:
 			self.callbacks[portnum_name](json_packet)
-		else:
-			# Default behavior - print to console
+		elif not self.callbacks:
 			print(f'{json.dumps(json_packet)}')
 
 
@@ -215,6 +214,10 @@ class MeshtasticMQTT(object):
 		:param msg:      An instance of MQTTMessage
 		'''
 
+		# Skip JSON-encoded and PKI subtopics since they aren't protobuf ServiceEnvelopes
+		if '/json/' in msg.topic or '/pki/' in msg.topic:
+			return
+
 		try:
 			# Define the service envelope
 			service_envelope = mqtt_pb2.ServiceEnvelope()
@@ -223,8 +226,6 @@ class MeshtasticMQTT(object):
 				# Parse the message payload
 				service_envelope.ParseFromString(msg.payload)
 			except Exception as e:
-				print(f'Error parsing service envelope: {e}')
-				print(f'Raw payload: {msg.payload}')
 				return
 
 			# Extract the message packet from the service envelope
