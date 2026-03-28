@@ -54,6 +54,11 @@ client.connect(
     password='large4cats',
     key='AQ=='
 )
+
+# Start MQTT client loop until interrupted
+# If you want your script to perform other activities with the MQTT loop in another thread.
+# look at client.loop_start()
+client.loop_forever()
 ```
 
 ### Callback System
